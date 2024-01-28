@@ -56,4 +56,11 @@ body {
     pointer-events: none; /* This makes sure the tooltip doesn't interfere with mouse events */
     z-index: 10;
     /* Other styling */
-  }
+  
+}
+.legend{
+    font-family: 'Open sans', serif;
+    font-weight: 300;
+    font-size: 13px;
+}
+

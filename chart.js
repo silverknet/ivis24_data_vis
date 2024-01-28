@@ -11,6 +11,12 @@ data_properties = {
   get_x: function() { return this.skills[this.x_axis]; },
   get_y: function() { return this.skills[this.y_axis]; },
 }
+color_map = {
+  "Computer Science": "rgb(255,0,0)",
+  "Media Technology": "rgb(15,255,0)",
+  "Human-Computer Interaction":"rgb(15,0,255)",
+  "Other":"rgb(130,130,130)",
+}
 
 var xscale = d3.scaleLinear([0, 10],[0, frame_properties.width]);
 var yscale = d3.scaleLinear([0, 10],[frame_properties.height, 0]);
@@ -28,6 +34,22 @@ d3.csv("data.csv").then((d)=>{
   filter();
 });
 
+function findMostFrequentString(strings) {
+  const counts = {};
+  let maxCount = 0;
+  let mostFrequentString = '';
+
+  strings.forEach(string => {
+      counts[string] = (counts[string] || 0) + 1;
+      if (counts[string] > maxCount) {
+          maxCount = counts[string];
+          mostFrequentString = string;
+      }
+  });
+
+  return mostFrequentString;
+}
+
 function get_bubble_data(old_data){
   new_data = [];
   ack_data = {};
@@ -36,16 +58,19 @@ function get_bubble_data(old_data){
     if(!old_data[i][data_properties.get_x()] || !old_data[i][data_properties.get_y()] ){
       continue;
     }
-    if (ack_data[`${old_data[i][data_properties.get_x()]}, ${old_data[i][data_properties.get_y()]}`]){
+    if (ack_data[`${old_data[i][data_properties.get_x()]}, ${old_data[i][data_properties.get_y()]}`]){ // if exists
       ack_data[`${old_data[i][data_properties.get_x()]}, ${old_data[i][data_properties.get_y()]}`].size += 1;
       ack_data[`${old_data[i][data_properties.get_x()]}, ${old_data[i][data_properties.get_y()]}`].alias.push(data[i].ALIAS);
+      ack_data[`${old_data[i][data_properties.get_x()]}, ${old_data[i][data_properties.get_y()]}`].major.push(data[i].MAJOR);
     }
     else{
       ack_data[`${old_data[i][data_properties.get_x()]}, ${old_data[i][data_properties.get_y()]}`] = {size: 1, x: old_data[i][data_properties.get_x()], y: old_data[i][data_properties.get_y()]};
       ack_data[`${old_data[i][data_properties.get_x()]}, ${old_data[i][data_properties.get_y()]}`].alias = [old_data[i].ALIAS];
+      ack_data[`${old_data[i][data_properties.get_x()]}, ${old_data[i][data_properties.get_y()]}`].major = [old_data[i].MAJOR];
     }
   }
   Object.keys(ack_data).forEach((key) => {
+    ack_data[key].biggestMajor = findMostFrequentString(ack_data[key].major);
     new_data.push(ack_data[key]);
   });
   return new_data
@@ -63,7 +88,14 @@ function array_to_string(arr){
   return str;
 }
 
-
+function get_color(d){
+  console.log(d.biggestMajor)
+  if(d.biggestMajor in color_map){
+    return color_map[d.biggestMajor];
+  }else{
+    return color_map["other"];
+  }
+}
 
 function run(){
   d3.select("elementSelector").style("outline", "none");
@@ -75,7 +107,7 @@ function run(){
   const svg = d3.select(".d3_content").append("svg")
   .attr("class", "scatter-frame")
   .attr("width", frame_properties.width + frame_properties.padding * 2)
-  .attr("height", frame_properties.height + frame_properties.padding * 2);
+  .attr("height", frame_properties.height + frame_properties.padding * 2 +100 );
 
   var x = d3.scaleLinear().domain([0, 10]).range([ 0, frame_properties.width]);
   var y = d3.scaleLinear().domain([10, 0]).range([ 0, frame_properties.height]);
@@ -128,8 +160,7 @@ function run(){
     .attr("cx", (d)=>{return xscale(parseInt(d.x)) + frame_properties.padding})
     .attr("cy", (d)=>{return yscale(parseInt(d.y)) + frame_properties.padding})
     .attr("r", (d)=>{ return dot_size_scale(d.size)})
-    .style("fill", "rgb(242,49,49)" )
-    .style("fill", "rgb(242,49,49)")
+    .style("fill", function(d){return get_color(d)})
     .style("stroke", "black") 
     .style("stroke-width", "1")
     .style("opacity", "0.7")
@@ -148,6 +179,31 @@ function run(){
           .attr("r", (d)=>{ return dot_size_scale(d.size )});
           hideTooltip(event, d);
       });
+
+  // legend
+  var legend = svg.selectAll(".legend")
+    .data(Object.entries(color_map))
+    .enter().append("g")
+    .attr("class", "legend")
+    .attr("transform", function(d, i) { return `translate( ${frame_properties.padding}, ${frame_properties.height+ frame_properties.padding * 2 + (i * 20)})`; });
+
+  // Draw legend colored rectangles
+  legend.append("circle")
+    .attr("cx", 20)
+    .attr("cy", 10)
+    .attr("r", 4)
+    .style("fill", function(d) { return d[1]; })
+    .style("opacity", "0.7")
+    .style("stroke", "black") 
+    .style("stroke-width", "1");
+    
+  // Draw legend text
+  legend.append("text")
+    .attr("x", 45)
+    .attr("y", 9)
+    .attr("dy", ".35em")
+    .style("text-anchor", "start")
+    .text(function(d) { return d[0]; });
 
   // y axis label
   svg.append("text").text(data_properties.get_y())
