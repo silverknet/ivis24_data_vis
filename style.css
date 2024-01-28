@@ -1,0 +1,57 @@
+body {
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome, Opera, and Edge */
+}
+.container{
+    display: flex;
+    flex-direction: row;
+}
+.checkboxContainer{
+    font-family: 'Open sans', serif;
+    font-weight: 300;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    height: 550px;
+    flex-wrap: wrap;
+}
+.checkbox{
+    margin: 3px;
+    margin-right: 12px;
+    
+}
+.checkbox input{
+    margin-right: 8px;
+}
+.d3_content{
+    margin-top: 20px;
+}
+.scatter_frame{
+    margin-top: 500px;
+}
+.rect {
+    fill: blue;
+}
+.axis_text {
+    font-family: 'Merriweather', serif;
+    font-weight: 300;
+    font-size: 20px;
+}
+.Title_text{
+    font-family: 'Merriweather', serif;
+    font-weight: 900;
+    font-size: 24px;
+}
+.tooltip {
+    font-family: 'Merriweather', serif;
+    font-size: 13px;
+    line-height: 21px;
+    position: absolute;
+    pointer-events: none; /* This makes sure the tooltip doesn't interfere with mouse events */
+    z-index: 10;
+    /* Other styling */
+  }
